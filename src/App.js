@@ -1,10 +1,11 @@
 import Home from './Home';
-import Navbar from './Navbar';
+import Visualization from './Visualization'
 
 function App() {
   return (
-    <div className="App">
-      <Navbar /> 
+    <div className="overflow-x-hidden">
+      <Home /> 
+      <Visualization />
     </div>
   );
 }
