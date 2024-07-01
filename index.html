@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en" class="dark-mode">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Grade Entry Form</title>
+    <script type="text/javascript" src=https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/vis-network.min.js></script>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --input-bg: #f5f5f5;
+            --button-bg: #007AFF;
+            --button-text: #ffffff;
+            --entry-bg: #e0e0e0;
+            --border-color: #d0d0d0;
+        }
+ 
+        .dark-mode {
+            --bg-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --input-bg: #2c2c2c;
+            --button-bg: #0a84ff;
+            --button-text: #ffffff;
+            --entry-bg: #333333;
+            --border-color: #444444;
+        }
+ 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            line-height: 1.6;
+        }
+ 
+        h1, h2 {
+            font-weight: 300;
+            margin-bottom: 30px;
+        }
+ 
+        form {
+            background-color: var(--input-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+ 
+        label, input, button {
+            display: block;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+ 
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: border-color 0.3s ease;
+        }
+ 
+        input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: var(--button-bg);
+        }
+ 
+        button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+ 
+        button:hover {
+            opacity: 0.9;
+        }
+ 
+        button:active {
+            transform: scale(0.98);
+        }
+ 
+        #completedClasses {
+            margin-bottom: 30px;
+        }
+ 
+        .class-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: var(--entry-bg);
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+ 
+        .class-entry span {
+            flex: 1;
+            margin-right: 10px;
+        }
+ 
+        .entry-actions button {
+            padding: 8px 12px;
+            font-size: 14px;
+            margin-left: 10px;
+            background-color: transparent;
+            border: 1px solid var(--button-bg);
+            color: var(--button-bg);
+        }
+ 
+        .entry-actions button:hover {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+        }
+ 
+        #darkModeToggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: transparent;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+ 
+        #darkModeToggle:hover {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            border-color: var(--button-bg);
+        }
+ 
+        #loadingIndicator {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+ 
+        .spinner {
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--button-bg);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+ 
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+ 
+        #networkContainer {
+            height: 400px;
+            border: 1px solid var(--border-color);
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <button id="darkModeToggle">🌙</button>
+    <h1>Course Grade Entry</h1>
+    <form id="gradeForm">
+        <label for="candidateClass">Candidate Class</label>
+        <input type="text" id="candidateClass" name="candidateClass" required>
+        
+        <h2>Completed Classes</h2>
+        <div id="completedClasses"></div>
+        <div class="class-entry" id="newClassEntry">
+            <input type="text" id="newClassName" placeholder="Class Name" >
+            <input type="number" id="newClassGrade" placeholder="Grade" min="0" max="100" >
+            <button type="button" onclick="addClassEntry()">Add Class</button>
+        </div>
+        
+        <button type="submit">Submit</button>
+    </form>
+ 
+    <div id="loadingIndicator">
+        <div class="spinner"></div>
+        <p>Processing your request...</p>
+    </div>
+ 
+    <div id="networkContainer"></div>
+ 
+    <script>
+        let classCounter = 0;
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const html = document.documentElement;
+ 
+        darkModeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark-mode');
+            darkModeToggle.textContent = html.classList.contains('dark-mode') ? '🌙' : '☀️';
+        });
+ 
+        function addClassEntry() {
+            const className = document.getElementById('newClassName').value;
+            const classGrade = document.getElementById('newClassGrade').value;
+            
+            if (!className || !classGrade) {
+                alert('Please enter both class name and grade.');
+                return;
+            }
+ 
+            const container = document.getElementById('completedClasses');
+            const newEntry = document.createElement('div');
+            newEntry.className = 'class-entry';
+            newEntry.id = `class-${classCounter}`;
+            newEntry.innerHTML = `
+                <span>${className}</span>
+                <span>${classGrade}</span>
+                <div class="entry-actions">
+                    <button type="button" onclick="editClassEntry(${classCounter})">Edit</button>
+                    <button type="button" onclick="removeClassEntry(${classCounter})">Remove</button>
+                </div>
+            `;
+            container.appendChild(newEntry);
+ 
+            document.getElementById('newClassName').value = '';
+            document.getElementById('newClassGrade').value = '';
+ 
+            classCounter++;
+        }
+ 
+        function editClassEntry(id) {
+            const entry = document.getElementById(`class-${id}`);
+            const [className, classGrade] = entry.querySelectorAll('span');
+            
+            className.innerHTML = `<input type="text" value="${className.textContent}">`;
+            classGrade.innerHTML = `<input type="number" value="${classGrade.textContent}" min="0" max="100">`;
+            
+            const actions = entry.querySelector('.entry-actions');
+            actions.innerHTML = `
+                <button type="button" onclick="saveClassEntry(${id})">Save</button>
+                <button type="button" onclick="removeClassEntry(${id})">Remove</button>
+            `;
+        }
+ 
+        function saveClassEntry(id) {
+            const entry = document.getElementById(`class-${id}`);
+            const [classNameInput, classGradeInput] = entry.querySelectorAll('input');
+            
+            const className = classNameInput.value;
+            const classGrade = classGradeInput.value;
+            
+            if (!className || !classGrade) {
+                alert('Please enter both class name and grade.');
+                return;
+            }
+ 
+            entry.innerHTML = `
+                <span>${className}</span>
+                <span>${classGrade}</span>
+                <div class="entry-actions">
+                    <button type="button" onclick="editClassEntry(${id})">Edit</button>
+                    <button type="button" onclick="removeClassEntry(${id})">Remove</button>
+                </div>
+            `;
+        }
+ 
+        function removeClassEntry(id) {
+            document.getElementById(`class-${id}`).remove();
+        }
+ 
+        async function submitToLambda(candidateClass, completedClasses) {
+            const lambdaEndpoint = 'https://b1w3byoea8.execute-api.us-west-1.amazonaws.com/default/yuh';
+            
+            const payload = {
+                candidateClass: candidateClass,
+                completedClasses: completedClasses
+            };
+ 
+            try {
+                const loadingIndicator = document.getElementById('loadingIndicator');
+                loadingIndicator.style.display = 'block';
+ 
+                const response = await fetch(lambdaEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
+                console.log(response);
+ 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+ 
+                const result = await response.json();
+                console.log('Lambda function response:', result);
+                visualizeNetwork(result);
+                alert('Data successfully submitted and network visualized!');
+            } catch (error) {
+                console.error('Error submitting to Lambda:', error);
+                alert('Error submitting data. Please try again.');
+            } finally {
+                loadingIndicator.style.display = 'none';
+            }
+        }
+ 
+        function visualizeNetwork(data) {
+            const container = document.getElementById('networkContainer');
+            const options = {
+                nodes: {
+                    shape: 'dot',
+                    size: 30,
+                    font: {
+                        size: 12,
+                        color: '#ffffff'
+                    },
+                    borderWidth: 2
+                },
+                edges: {
+                    width: 2
+                },
+                physics: {
+                    forceAtlas2Based: {
+                        gravitationalConstant: -26,
+                        centralGravity: 0.005,
+                        springLength: 230,
+                        springConstant: 0.18
+                    },
+                    maxVelocity: 146,
+                    solver: 'forceAtlas2Based',
+                    timestep: 0.35,
+                    stabilization: { iterations: 150 }
+                }
+            };
+ 
+            const network = new vis.Network(container, data, options);
+        }
+ 
+        document.getElementById('gradeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const candidateClass = document.getElementById('candidateClass').value;
+            const completedClasses = [];
+            
+            document.querySelectorAll('#completedClasses .class-entry').forEach(entry => {
+                const [className, classGrade] = entry.querySelectorAll('span');
+                completedClasses.push({ 
+                    className: className.textContent, 
+                    grade: classGrade.textContent 
+                });
+            });
+ 
+            console.log('Submitting the following data to Lambda:');
+            console.log('Candidate Class:', candidateClass);
+            console.log('Completed Classes:', completedClasses);
+ 
+            await submitToLambda(candidateClass, completedClasses);
+        });
+    </script>
+</body>
+</html>
+ 
